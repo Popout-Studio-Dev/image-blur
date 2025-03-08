@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Upload } from "lucide-react";
+import { Eraser, Upload } from "lucide-react";
 import RangeSlider from "./RangeSlider";
+import ActionButton from "./ActionButton";
 
 
 export function ImageUpload() {
@@ -9,6 +10,7 @@ export function ImageUpload() {
   const [blurRadius, setBlurRadius] = useState(10);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const originalImageDataRef = useRef<ImageData | null>(null);
 
 
   useEffect(() => {
@@ -19,6 +21,7 @@ export function ImageUpload() {
       canvasRef.current.width = imgRef.current.width;
       canvasRef.current.height = imgRef.current.height;
       ctx.drawImage(imgRef.current, 0, 0);
+      originalImageDataRef.current = ctx.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
     };
   }, [image]);
 
@@ -50,6 +53,13 @@ export function ImageUpload() {
       blurSize,
       blurSize
     );
+  };
+
+  const handleCancelBlur = () => {
+    if (!canvasRef.current || !originalImageDataRef.current) return;
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+    ctx.putImageData(originalImageDataRef.current, 0, 0);
   };
 
   
@@ -98,15 +108,25 @@ export function ImageUpload() {
         {image && (
           <div className="space-y-4">
             <div>
-            <RangeSlider
-               label="Blur intensity"
-               value={blurRadius}
-               min={1}
-               max={20}
-               onChange={setBlurRadius} 
-              />
+              <RangeSlider
+                 label="Blur intensity"
+                 value={blurRadius}
+                 min={1}
+                 max={20}
+                 onChange={setBlurRadius} 
+                />
             </div>
-          </div>
+            <div className="flex gap-4">
+                <ActionButton
+                    onClick={handleCancelBlur}
+                    icon={<Eraser className="w-4 h-4" />}
+                    label="Cancel blur"
+                    bgColor="bg-yellow-100"
+                    textColor="text-yellow-700"
+                    hoverColor="bg-yellow-200"
+                  />
+                </div>
+            </div>
         )}
       </div>
     </div>
