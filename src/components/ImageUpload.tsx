@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Eraser, Upload } from "lucide-react";
+import { Download, Eraser, Upload } from "lucide-react";
 import RangeSlider from "./RangeSlider";
 import ActionButton from "./ActionButton";
 
@@ -60,6 +60,15 @@ export function ImageUpload() {
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
     ctx.putImageData(originalImageDataRef.current, 0, 0);
+  };
+
+  const handleDownload = () => {
+    if (!canvasRef.current) return;
+    const dataUrl = canvasRef.current.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = "blurred-image.png"; 
+    link.click();
   };
 
   
@@ -125,6 +134,14 @@ export function ImageUpload() {
                     textColor="text-yellow-700"
                     hoverColor="bg-yellow-200"
                   />
+                   <ActionButton
+                     onClick={handleDownload}
+                     icon={<Download className="w-4 h-4" />}
+                     label="Download image"
+                     bgColor="bg-blue-100"
+                     textColor="text-blue-700"
+                     hoverColor="bg-blue-200"
+                   />
                 </div>
             </div>
         )}
