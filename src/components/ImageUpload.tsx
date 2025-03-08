@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Upload } from "lucide-react";
+import RangeSlider from "./RangeSlider";
 
 
 export function ImageUpload() {
@@ -94,6 +95,19 @@ export function ImageUpload() {
             </>
           )}
         </label>
+        {image && (
+          <div className="space-y-4">
+            <div>
+            <RangeSlider
+               label="Blur intensity"
+               value={blurRadius}
+               min={1}
+               max={20}
+               onChange={setBlurRadius} 
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
