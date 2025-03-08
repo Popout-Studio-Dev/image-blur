@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Download, Eraser, Upload } from "lucide-react";
+import { Download, Eraser, Trash, Upload } from "lucide-react";
 import RangeSlider from "./RangeSlider";
 import ActionButton from "./ActionButton";
 
@@ -142,6 +142,14 @@ export function ImageUpload() {
                      textColor="text-blue-700"
                      hoverColor="bg-blue-200"
                    />
+                    <ActionButton
+                      onClick={() => setImage(null)}
+                      icon={<Trash className="w-4 h-4" />}
+                      label="Delete image"
+                      bgColor="bg-red-100"
+                      textColor="text-red-700"
+                      hoverColor="bg-red-200"
+                    />
                 </div>
             </div>
         )}
