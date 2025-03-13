@@ -76,8 +76,8 @@ export function ImageUpload() {
   
 
   return (
-   
-    <div className={`w-full   mx-auto border-2 border-dashed border-blue-500  p-4`}>
+    // sizing the image so that it cannot be distorted
+    <div className={`w-full  max-w-${imgRef.current?.width} max-h-${imgRef.current?.height}  mx-auto border-2 border-dashed border-blue-500  p-4`}>
       <div className="space-y-4  ">
         {image ? (
             <div className="relative w-full aspect-video ">
