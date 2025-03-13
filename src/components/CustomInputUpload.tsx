@@ -37,7 +37,22 @@ const CustomInputUpload: React.FC<TypeProps> = ({ setImage }) => {
         onDropAccepted: () => setIsHovered(false),
     });
 
- 
+    const handlePaste = useCallback((e: ClipboardEvent) => {
+        const itemsFiles = e.clipboardData?.items;
+        if (itemsFiles) {
+            const firstItemFile = itemsFiles[0];
+            const file = firstItemFile.getAsFile();
+            handleRender(file);
+        }
+    }, [setImage]);
+
+    useEffect(() => {
+        document.addEventListener('paste', handlePaste);
+        return () => {
+            document.removeEventListener('paste', handlePaste);
+        };
+    }, [handlePaste]);
+
 
     return (
         <div

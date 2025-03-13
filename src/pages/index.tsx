@@ -1,12 +1,10 @@
-import DrapDrop from "@/components/CustomInputUpload";
 import { ImageUpload } from "@/components/ImageUpload";
-import { useState } from "react";
+
 
 
 
 
 export default function Home() {
-    const [image, setImage] = useState<string | ArrayBuffer | null>(null);
   
   return (
     <>
