@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { Download, Eraser, Trash, Upload } from "lucide-react";
 import RangeSlider from "./RangeSlider";
 import ActionButton from "./ActionButton";
+import CustomInputUpload from "./CustomInputUpload";
 
 
 export function ImageUpload() {
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState<string | ArrayBuffer | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [blurRadius, setBlurRadius] = useState(10);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,6 +24,7 @@ export function ImageUpload() {
       ctx.drawImage(imgRef.current, 0, 0);
       originalImageDataRef.current = ctx.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
     };
+    imgRef.current.src = image as string
   }, [image]);
 
   const handleDraw = (e: React.MouseEvent<HTMLCanvasElement>, drawing: boolean) => {
@@ -74,13 +76,32 @@ export function ImageUpload() {
   
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4">
-      <div className="space-y-4">
-        <label className="border-2 border-dashed rounded-lg p-8 cursor-pointer flex flex-col items-center justify-center gap-4 border-gray-300 hover:border-blue-400">
+   
+    <div className={`w-full   mx-auto border-2 border-dashed border-blue-500  p-4`}>
+      <div className="space-y-4  ">
+        {image ? (
+            <div className="relative w-full aspect-video ">
+              <img ref={imgRef} src={image as string} alt="Uploaded preview" className="hidden" />
+              <canvas
+                ref={canvasRef}
+                className="absolute top-0 left-0 w-full h-full cursor-crosshair"
+                onMouseDown={() => setIsDrawing(true)}
+                onMouseMove={(e) => handleDraw(e, isDrawing)}
+                onMouseUp={() => setIsDrawing(false)}
+                onMouseLeave={() => setIsDrawing(false)}
+              />
+            </div>
+          ) : 
+            // call the custom image upload this component do : drag and drop , copy and paste  upload . 
+            // props 'setImage' est state to change value of 'image'
+            <CustomInputUpload setImage={setImage}/>
+        }
+        {/* <label className="border-2 border-dashed rounded-lg p-8 cursor-pointer flex flex-col items-center justify-center gap-4 border-gray-300 hover:border-blue-400">
           <input
             type="file"
             accept="image/*"
             onChange={(e) => {
+             
               const file = e.target.files?.[0];
               if (file) {
                 const reader = new FileReader();
@@ -90,6 +111,9 @@ export function ImageUpload() {
             }}
             className="hidden"
           />
+
+          <CustomInputUpload setImage={setImage}/>
+
           {image ? (
             <div className="relative w-full aspect-video">
               <img ref={imgRef} src={image} alt="Uploaded preview" className="hidden" />
@@ -113,7 +137,7 @@ export function ImageUpload() {
               </div>
             </>
           )}
-        </label>
+        </label> */}
         {image && (
           <div className="space-y-4">
             <div>
