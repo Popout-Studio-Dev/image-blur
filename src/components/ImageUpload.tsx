@@ -7,7 +7,7 @@ import ActionButton from "./ActionButton";
 export function ImageUpload() {
   const [image, setImage] = useState<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [blurRadius, setBlurRadius] = useState(10);
+  const [blurRadius, setBlurRadius] = useState(5);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const originalImageDataRef = useRef<ImageData | null>(null);
@@ -121,7 +121,7 @@ export function ImageUpload() {
                  label="Blur intensity"
                  value={blurRadius}
                  min={1}
-                 max={20}
+                 max={10}
                  onChange={setBlurRadius} 
                 />
             </div>
