@@ -1,17 +1,19 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Download, Eraser, Trash, Upload } from "lucide-react";
-import RangeSlider from "./RangeSlider";
+import { Download, Eraser, Trash } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 import ActionButton from "./ActionButton";
 import CustomInputUpload from "./CustomInputUpload";
+import RangeSlider from "./RangeSlider";
 
 
 export function ImageUpload() {
   const [image, setImage] = useState<string | ArrayBuffer | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
   const [blurRadius, setBlurRadius] = useState(10);
+  const [selection, setSelection] = useState({ startX: 0, startY: 0, width: 0, height: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const originalImageDataRef = useRef<ImageData | null>(null);
+
 
 
   useEffect(() => {
@@ -27,34 +29,64 @@ export function ImageUpload() {
     imgRef.current.src = image as string
   }, [image]);
 
-  const handleDraw = (e: React.MouseEvent<HTMLCanvasElement>, drawing: boolean) => {
-    if (!drawing || !canvasRef.current) return;
-  
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-  
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
-  
-    const blurSize = 50;
-    
+
+    setIsSelecting(true);
+    setSelection({ startX: x, startY: y, width: 0, height: 0 });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isSelecting || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const currentX = (e.clientX - rect.left) * scaleX;
+    const currentY = (e.clientY - rect.top) * scaleY;
+
+    const width = currentX - selection.startX;
+    const height = currentY - selection.startY;
+
+    setSelection(prev => ({ ...prev, width, height }));
+  };
+
+  const handleMouseUp = () => {
+    if (!isSelecting || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Appliquer le flou à la zone sélectionnée
+    const x = selection.width > 0 ? selection.startX : selection.startX + selection.width;
+    const y = selection.height > 0 ? selection.startY : selection.startY + selection.height;
+    const width = Math.abs(selection.width);
+    const height = Math.abs(selection.height);
+
     ctx.filter = `blur(${blurRadius}px)`;
-  
     ctx.drawImage(
       canvas,
-      x - blurSize / 2,
-      y - blurSize / 2,
-      blurSize,
-      blurSize,
-      x - blurSize / 2,
-      y - blurSize / 2,
-      blurSize,
-      blurSize
+      x,
+      y,
+      width,
+      height,
+      x,
+      y,
+      width,
+      height
     );
+
+    setIsSelecting(false);
+    setSelection({ startX: 0, startY: 0, width: 0, height: 0 });
   };
 
   const handleCancelBlur = () => {
@@ -69,11 +101,11 @@ export function ImageUpload() {
     const dataUrl = canvasRef.current.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = "blurred-image.png"; 
+    link.download = "blurred-image.png";
     link.click();
   };
 
-  
+
 
   return (
     // sizing the image so that it cannot be distorted
@@ -85,59 +117,30 @@ export function ImageUpload() {
               <canvas
                 ref={canvasRef}
                 className="absolute top-0 left-0 w-full h-full cursor-crosshair"
-                onMouseDown={() => setIsDrawing(true)}
-                onMouseMove={(e) => handleDraw(e, isDrawing)}
-                onMouseUp={() => setIsDrawing(false)}
-                onMouseLeave={() => setIsDrawing(false)}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
               />
+              {isSelecting && (
+                <div
+                  className="absolute border-2 border-blue-500 bg-blue-500/20"
+                  style={{
+                    left: `${(selection.width > 0 ? selection.startX : selection.startX + selection.width) * (canvasRef.current?.getBoundingClientRect().width || 1) / (canvasRef.current?.width || 1)}px`,
+                    top: `${(selection.height > 0 ? selection.startY : selection.startY + selection.height) * (canvasRef.current?.getBoundingClientRect().height || 1) / (canvasRef.current?.height || 1)}px`,
+                    width: `${Math.abs(selection.width) * (canvasRef.current?.getBoundingClientRect().width || 1) / (canvasRef.current?.width || 1)}px`,
+                    height: `${Math.abs(selection.height) * (canvasRef.current?.getBoundingClientRect().height || 1) / (canvasRef.current?.height || 1)}px`,
+                    position: 'absolute',
+                    pointerEvents: 'none'
+                  }}
+                />
+              )}
             </div>
-          ) : 
-            // call the custom image upload this component do : drag and drop , copy and paste  upload . 
+          ) :
+            // call the custom image upload this component do : drag and drop , copy and paste  upload .
             // props 'setImage' est state to change value of 'image'
             <CustomInputUpload setImage={setImage}/>
         }
-        {/* <label className="border-2 border-dashed rounded-lg p-8 cursor-pointer flex flex-col items-center justify-center gap-4 border-gray-300 hover:border-blue-400">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-             
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => setImage(e.target?.result as string);
-                reader.readAsDataURL(file);
-              }
-            }}
-            className="hidden"
-          />
-
-          <CustomInputUpload setImage={setImage}/>
-
-          {image ? (
-            <div className="relative w-full aspect-video">
-              <img ref={imgRef} src={image} alt="Uploaded preview" className="hidden" />
-              <canvas
-                ref={canvasRef}
-                className="absolute top-0 left-0 w-full h-full cursor-crosshair"
-                onMouseDown={() => setIsDrawing(true)}
-                onMouseMove={(e) => handleDraw(e, isDrawing)}
-                onMouseUp={() => setIsDrawing(false)}
-                onMouseLeave={() => setIsDrawing(false)}
-              />
-            </div>
-          ) : (
-            <>
-              <div className="rounded-full bg-blue-100 p-4">
-                <Upload className="w-8 h-8 text-blue-600" />
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-medium">Click to select an image</p>
-                <p className="text-sm text-gray-500 mt-1">Supported formats: JPG, PNG, GIF, WEBP</p>
-              </div>
-            </>
-          )}
-        </label> */}
         {image && (
           <div className="space-y-4">
             <div>
@@ -146,7 +149,7 @@ export function ImageUpload() {
                  value={blurRadius}
                  min={1}
                  max={20}
-                 onChange={setBlurRadius} 
+                 onChange={setBlurRadius}
                 />
             </div>
             <div className="flex gap-4">
