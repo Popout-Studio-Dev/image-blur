@@ -1,4 +1,4 @@
-import { Download, Eraser, Trash } from "lucide-react";
+import { Download, Eraser, Trash, Undo, Undo2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ActionButton from "./ActionButton";
 import CustomInputUpload from "./CustomInputUpload";
@@ -13,6 +13,8 @@ export function ImageUpload() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const originalImageDataRef = useRef<ImageData | null>(null);
+  const historyActionRef = useRef<ImageData[]>([]);
+
 
 
 
@@ -66,6 +68,10 @@ export function ImageUpload() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Saves the current state before applying the blur
+    historyActionRef.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    if (historyActionRef.current.length > 10) historyActionRef.current.shift(); // Limit history to 10 states
+
     // Appliquer le flou à la zone sélectionnée
     const x = selection.width > 0 ? selection.startX : selection.startX + selection.width;
     const y = selection.height > 0 ? selection.startY : selection.startY + selection.height;
@@ -95,6 +101,16 @@ export function ImageUpload() {
     if (!ctx) return;
     ctx.putImageData(originalImageDataRef.current, 0, 0);
   };
+
+  const handleUndoBlur = () => {
+    if (!canvasRef.current || historyActionRef.current.length === 0) return;
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+  
+    const lastImageData = historyActionRef.current.pop();
+    if (lastImageData) ctx.putImageData(lastImageData, 0, 0);
+  };
+  
 
   const handleDownload = () => {
     if (!canvasRef.current) return;
@@ -153,14 +169,22 @@ export function ImageUpload() {
                 />
             </div>
             <div className="flex gap-4">
-                <ActionButton
-                    onClick={handleCancelBlur}
-                    icon={<Eraser className="w-4 h-4" />}
-                    label="Cancel blur"
-                    bgColor="bg-yellow-100"
-                    textColor="text-yellow-700"
-                    hoverColor="bg-yellow-200"
-                  />
+                   <ActionButton
+                    onClick={handleUndoBlur}
+                    icon={<Undo2 className="w-4 h-4" />}
+                    label="Undo last blur"
+                    bgColor="bg-gray-100"
+                    textColor="text-gray-700"
+                    hoverColor="bg-gray-200"
+                    />
+                   <ActionButton
+                     onClick={handleCancelBlur}
+                     icon={<Eraser className="w-4 h-4" />}
+                     label="Cancel blur"
+                     bgColor="bg-yellow-100"
+                     textColor="text-yellow-700"
+                     hoverColor="bg-yellow-200"
+                   />
                    <ActionButton
                      onClick={handleDownload}
                      icon={<Download className="w-4 h-4" />}
