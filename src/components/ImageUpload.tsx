@@ -257,41 +257,6 @@ export function ImageUpload() {
                 textColor="text-red-700"
                 hoverColor="bg-red-200"
               />
-              
-              <ActionButton
-                onClick={handleUndoBlur}
-                icon={<Undo2 className="w-4 h-4" />}
-                label="Undo last blur"
-                bgColor="bg-gray-100"
-                textColor="text-gray-700"
-                hoverColor="bg-gray-200"
-               />
-              <ActionButton
-                 onClick={handleCancelBlur}
-                 icon={<Eraser className="w-4 h-4" />}
-                 label="Cancel blur"
-                 bgColor="bg-yellow-100"
-                 textColor="text-yellow-700"
-                 hoverColor="bg-yellow-200"
-               />
-               <ActionButton
-                 onClick={handleDownload}
-                 icon={<Download className="w-4 h-4" />}
-                 label="Download image"
-                 bgColor="bg-blue-100"
-                 textColor="text-blue-700"
-                 hoverColor="bg-blue-200"
-               />
-                <ActionButton
-                  onClick={() => setImage(null)}
-                  icon={<Trash className="w-4 h-4" />}
-                  label="Delete image"
-                  bgColor="bg-red-100"
-                  textColor="text-red-700"
-                  hoverColor="bg-red-200"
-                />
-                </div>
-
             </div>
           </div>
         )}
