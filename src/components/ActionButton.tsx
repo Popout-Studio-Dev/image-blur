@@ -20,7 +20,7 @@ const ActionButton = ({
   return (
     <button
       onClick={onClick}
-      className={`cursor-pointer flex items-center gap-2 px-4 py-2 ${bgColor} ${textColor} rounded-md hover:${hoverColor} transition-colors`}
+      className={`cursor-pointer flex items-center gap-2 px-4 py-2 border ${bgColor} ${textColor} rounded-md hover:${hoverColor} transition-colors`}
     >
       {icon}
       {label}
