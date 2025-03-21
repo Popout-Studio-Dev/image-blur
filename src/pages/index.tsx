@@ -1,5 +1,6 @@
 import { ImageUpload } from "@/components/ImageUpload";
 
+
 export default function Home() {
   return (
     <>
@@ -7,6 +8,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-center mb-8">Image Blur</h1>
           <ImageUpload />
+          
         </div>
       </main>
     </>

@@ -1,11 +1,18 @@
-import { Download, Eraser, Trash } from "lucide-react";
+import { Download, Eraser, Trash, Undo2  ,User} from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ActionButton from "./ActionButton";
 import CustomInputUpload from "./CustomInputUpload";
 import RangeSlider from "./RangeSlider";
+import Image from 'next/image'; // Importer Image de next/image
+
+const contributeurs = [
+  { id: 1, name: 'DOSSIVIL', image: '/images/y.jpg', linkedin: 'https://www.linkedin.com/in/rivoire-dossivil-896427320/' },
+  
+];
 
 
 export function ImageUpload() {
+  const [open, setOpen] = useState(false);
   const [image, setImage] = useState<string | ArrayBuffer | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
   const [blurRadius, setBlurRadius] = useState(10);
@@ -13,6 +20,8 @@ export function ImageUpload() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const originalImageDataRef = useRef<ImageData | null>(null);
+  const historyActionRef = useRef<ImageData[]>([]);
+
 
 
 
@@ -66,6 +75,10 @@ export function ImageUpload() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Saves the current state before applying the blur
+    historyActionRef.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    if (historyActionRef.current.length > 10) historyActionRef.current.shift(); // Limit history to 10 states
+
     // Appliquer le flou à la zone sélectionnée
     const x = selection.width > 0 ? selection.startX : selection.startX + selection.width;
     const y = selection.height > 0 ? selection.startY : selection.startY + selection.height;
@@ -95,6 +108,16 @@ export function ImageUpload() {
     if (!ctx) return;
     ctx.putImageData(originalImageDataRef.current, 0, 0);
   };
+
+  const handleUndoBlur = () => {
+    if (!canvasRef.current || historyActionRef.current.length === 0) return;
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+  
+    const lastImageData = historyActionRef.current.pop();
+    if (lastImageData) ctx.putImageData(lastImageData, 0, 0);
+  };
+  
 
   const handleDownload = () => {
     if (!canvasRef.current) return;
@@ -153,14 +176,22 @@ export function ImageUpload() {
                 />
             </div>
             <div className="flex gap-4">
-                <ActionButton
-                    onClick={handleCancelBlur}
-                    icon={<Eraser className="w-4 h-4" />}
-                    label="Cancel blur"
-                    bgColor="bg-yellow-100"
-                    textColor="text-yellow-700"
-                    hoverColor="bg-yellow-200"
-                  />
+                   <ActionButton
+                    onClick={handleUndoBlur}
+                    icon={<Undo2 className="w-4 h-4" />}
+                    label="Undo last blur"
+                    bgColor="bg-gray-100"
+                    textColor="text-gray-700"
+                    hoverColor="bg-gray-200"
+                    />
+                   <ActionButton
+                     onClick={handleCancelBlur}
+                     icon={<Eraser className="w-4 h-4" />}
+                     label="Cancel blur"
+                     bgColor="bg-yellow-100"
+                     textColor="text-yellow-700"
+                     hoverColor="bg-yellow-200"
+                   />
                    <ActionButton
                      onClick={handleDownload}
                      icon={<Download className="w-4 h-4" />}
@@ -177,10 +208,48 @@ export function ImageUpload() {
                       textColor="text-red-700"
                       hoverColor="bg-red-200"
                     />
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpen(!open)}
+                        className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg transition-all hover:bg-blue-500 "
+                      >
+                        <label><User className="w-4 h-4 mr-2" />Contributeurs</label>
+                      </button>
+
+                      {open && (
+                        <div className="absolute bottom-full mb-2 left-0 w-45 bg-white shadow-lg rounded-md z-10">
+                          <ul className="flex flex-col p-2 space-y-0.5">
+                            {contributeurs.map((contributeur) => (
+                              <li key={contributeur.id} className="flex items-center space-x-2">
+                              <div className="w-16 h-16 rounded-full overflow-hidden">
+                                <Image
+                                  src={contributeur.image}
+                                  alt={contributeur.name}
+                                  width={64}
+                                  height={64}
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                              <a
+                                href={contributeur.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 font-semibold hover:text-blue-500"
+                              >
+                                {contributeur.name}
+                              </a>
+                            </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
                 </div>
             </div>
         )}
       </div>
+      
     </div>
+    
   );
 }
