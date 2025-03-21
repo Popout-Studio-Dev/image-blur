@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ActionButton from "./ActionButton";
 import CustomInputUpload from "./CustomInputUpload";
 import RangeSlider from "./RangeSlider";
+import { applyBlur } from "./ApplyBlur";
 
 export function ImageUpload() {
   const [image, setImage] = useState<string | ArrayBuffer | null>(null);
@@ -75,47 +76,8 @@ export function ImageUpload() {
     const width = Math.abs(selection.width);
     const height = Math.abs(selection.height);
   
-    // Appliquer le flou à la zone sélectionnée
-    ctx.filter = `blur(${blurRadius}px)`;
-  
-
-    if (selectedShape === "rectangle") {
-      ctx.drawImage(canvas, x, y, width, height, x, y, width, height);
-      
-    }
-    else if (selectedShape === "triangle") {
-        ctx.globalCompositeOperation = "destination-out"; 
-        ctx.beginPath();
-        ctx.moveTo(x + width / 2, y);
-        ctx.lineTo(x + width, y + height);
-        ctx.lineTo(x, y + height);
-        ctx.closePath();
-        ctx.fill();
-        ctx.globalCompositeOperation = "source-over";
-        ctx.strokeStyle = "black"; 
-        ctx.lineWidth = 0.25; 
-        ctx.beginPath();
-        ctx.moveTo(x + width / 2, y);
-        ctx.lineTo(x + width, y + height);
-        ctx.lineTo(x, y + height);
-        ctx.closePath();
-        ctx.stroke();
+    applyBlur(ctx, x, y, width, height, blurRadius, selectedShape);
     
-      } 
-    
-    else if (selectedShape === "circle") {
-        ctx.globalCompositeOperation = "destination-out"; 
-        ctx.beginPath();
-        ctx.arc(x + width / 2, y + height / 2, Math.max(width, height) / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = "source-over"; 
-        ctx.strokeStyle = "black"; 
-        ctx.lineWidth = 0.25;
-        ctx.beginPath();
-        ctx.arc(x + width / 2, y + height / 2, Math.max(width, height) / 2, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-  
     setIsSelecting(false);
     setSelection({ startX: 0, startY: 0, width: 0, height: 0 });
   };
